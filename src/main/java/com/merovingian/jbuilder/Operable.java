@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author jasonr
  */
-public interface Operable<T> extends Buildable<T> {
+public interface Operable<T> {
 
     Operable<T> With(Function<T, T> func);
 

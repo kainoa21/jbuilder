@@ -4,13 +4,11 @@
  */
 package com.merovingian.jbuilder;
 
-import java.util.List;
-
 /**
  *
  * @author jasonr
  */
-public interface ListOperable<T>  extends Operable<List<T>> {
+public interface ListOperable<T> extends Operable<T> {
     
     ListOperable<T> TheFirst(int amount);
     ListOperable<T> TheNext(int amount);

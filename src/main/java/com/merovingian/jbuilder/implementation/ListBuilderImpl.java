@@ -4,6 +4,7 @@
  */
 package com.merovingian.jbuilder.implementation;
 
+import com.google.common.base.Function;
 import com.merovingian.jbuilder.util.DistinctAffectedItemCalculator;
 import com.merovingian.jbuilder.declarations.Declaration;
 import com.google.common.base.Preconditions;
@@ -16,6 +17,7 @@ import com.merovingian.jbuilder.ListOperable;
 import com.merovingian.jbuilder.declarations.DeclarationComparer;
 import com.merovingian.jbuilder.declarations.GlobalDeclaration;
 import com.merovingian.jbuilder.declarations.RangeDeclaration;
+import com.merovingian.jbuilder.functions.Function2;
 import com.merovingian.jbuilder.generators.UniqueRandomGenerator;
 import com.merovingian.jbuilder.generators.UniqueRandomGeneratorImpl;
 import com.merovingian.jbuilder.propertynaming.PropertyNamer;
@@ -28,7 +30,7 @@ import java.util.PriorityQueue;
  *
  * @author jasonr
  */
-public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements ListBuilder<T> {
+public class ListBuilderImpl<T> extends AbstractOperable<T> implements ListBuilder<T> {
 
     private final Class<T> type;
     private final int size;
@@ -50,22 +52,26 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
 
         scopeUniqueRandomGenerator = new UniqueRandomGeneratorImpl();
         
-        objectBuilder = new ObjectBuilderImpl<T>(c, reflectionUtil);
+        objectBuilder = new ObjectBuilderImpl<T>(c, reflectionUtil).WithPropertyNamer(propertyNamer);
        
     }
 
+    @Override
     public int getCapacity() {
         return size;
     }
 
+    @Override
     public Collection<Declaration<T>> getDeclarations() {
         return declarations;
     }
 
+    @Override
     public ObjectBuilder<T> getObjectBuilder() {
         return objectBuilder;
     }
 
+    @Override
     public ListBuilder<T> All() {
         this.globalDeclaration = new GlobalDeclaration<T>(this, getObjectBuilder());
         return this;
@@ -101,31 +107,38 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
         return list;
     }
 
+    @Override
     public List<T> Build() throws BuilderException {
-        
+ 
         List<T> list = new ArrayList<T>(getCapacity());
-        
+
         Construct();
-        
-        int index=0;
+
+        int index = 0;
         Declaration d = declarations.poll();
         while (d != null) {
             if (index < d.getStart()) {
                 // then use the global declaration to contruct until we get to the next declaration
                 list.addAll(this.globalDeclaration.Build(d.getStart() - index));
             }
-            
+
             list.addAll(d.Build());
             index = d.getEnd() + 1;
+        }
+
+        if (index < getCapacity()) {
+            // then use the global declaration to contruct until we get to the next declaration
+            list.addAll(this.globalDeclaration.Build(getCapacity() - index));
         }
 
         return list;
     }
 
+    @Override
     public Declaration<T> addDeclaration(Declaration<T> declaration) {
         
-        Preconditions.checkArgument(declaration.getStart() > 0, "A declaration was added which had a start index less than zero: %s", declaration.getEnd());
-        Preconditions.checkArgument(declaration.getEnd() < this.getCapacity(), "A declaration was added which had an end index greater than the capacity of the list being generated: %s", declaration.getEnd());
+        Preconditions.checkArgument(declaration.getStart() >= 0, "A declaration was added which had a start index less than or equal to zero: %s", declaration.getStart());
+        Preconditions.checkArgument(declaration.getEnd() < this.getCapacity(), "A declaration was added which had an end index greater than or equal to the capacity of the list being generated: %s", declaration.getEnd());
         
         this.declarations.add(declaration);    
         
@@ -136,6 +149,7 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
         return declaration;
     }
 
+    @Override
     public UniqueRandomGenerator getRandomGenerator() {
         return scopeUniqueRandomGenerator;
     }
@@ -155,15 +169,17 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
      * Declarations Section
      */
     
+    @Override
     public ListOperable<T> TheFirst(int amount) {
         Preconditions.checkArgument(amount > 0, "TheFirst amount must be 1 or greater: %s", amount);
         Preconditions.checkArgument(amount < getCapacity(), "TheFirst amount must be less than the size of the list that is being generated %s", amount);
 
         Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), 0, amount - 1);
         this.addDeclaration(declaration);
-        return this;
+        return declaration;
     }
 
+    @Override
     public ListOperable<T> TheLast(int amount) {
 
         Preconditions.checkArgument(amount > 0, "TheLast amount must be 1 or greater: %s", amount);
@@ -173,7 +189,7 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
         int start = getCapacity() - amount;
         Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, getCapacity() - 1);
         this.addDeclaration(declaration);
-        return this;
+        return declaration;
     }
 
 //    public ListOperable<T> Random(int amount) {
@@ -189,6 +205,7 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
 //        return this;
 //    }
  
+    @Override
     public ListOperable<T> Section(int start, int end) {
 
         Preconditions.checkArgument(start >= 0, "Section - start must be 0 or greater: %s", start);
@@ -199,9 +216,10 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
 
         Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
         this.addDeclaration(declaration);
-        return this;
+        return declaration;
     }
     
+    @Override
     public ListOperable<T> TheNext(int amount) {
         Preconditions.checkArgument(amount > 0, "TheNext must be 1 or greater: %s", amount);
 
@@ -217,9 +235,10 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
         Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
         this.addDeclaration(declaration);
 
-        return this;
+        return declaration;
     }
     
+    @Override
     public ListOperable<T> ThePrevious(int amount) {
         Preconditions.checkArgument(amount > 0, "ThePrevious must be 1 or greater: %s", amount);
 
@@ -235,6 +254,36 @@ public class ListBuilderImpl<T> extends AbstractOperable<List<T>> implements Lis
         Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
         this.addDeclaration(declaration);
 
+        return declaration;
+    }
+
+    @Override
+    public ListBuilder<T> With(Function<T, T> func) {
+        this.getObjectBuilder().With(func);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ListBuilder<T> Do(Function2<TFunc, T> func, TFunc arg) {
+        this.getObjectBuilder().Do(func, arg);
+        return this;
+    }
+
+    @Override
+    public ListBuilder<T> And(Function<T, T> func) {
+        this.getObjectBuilder().And(func);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ListBuilder<T> And(Function2<TFunc, T> func, TFunc arg) {
+        this.getObjectBuilder().And(func, arg);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ListBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list) {
+        this.getObjectBuilder().DoForEach(func, list);
         return this;
     }
 }

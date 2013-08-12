@@ -4,7 +4,6 @@
  */
 package com.merovingian.jbuilder.implementation;
 
-import com.merovingian.jbuilder.functions.MultiFunction;
 import com.merovingian.jbuilder.ObjectBuilder;
 import com.google.common.base.Function;
 import com.merovingian.jbuilder.util.ReflectionUtil;
@@ -13,6 +12,7 @@ import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.exceptions.TypeCreationException;
 import com.merovingian.jbuilder.functions.Function2;
 import com.merovingian.jbuilder.propertynaming.PropertyNamer;
+import java.util.List;
 
 /**
  *
@@ -30,11 +30,18 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
         this.reflectionUtil = reflectionUtil;
     }
 
+    /**
+     *
+     * @param args
+     * @return
+     */
+    @Override
     public ObjectBuilder<T> WithConstructorArgs(Object[] args) {
         constructorArgs = args;
         return this;
     }
 
+    @Override
     public ObjectBuilder<T> WithPropertyNamer(PropertyNamer thePropertyNamer) {
         this.propertyNamer = thePropertyNamer;
         return this;
@@ -74,7 +81,7 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
                 obj = reflectionUtil.CreateInstanceOf(type);
             }
         } catch (TypeCreationException e) {
-            throw new BuilderException("Could not construct an instance of " + type.getName(), e);
+            throw new TypeCreationException("Could not construct an instance of " + type.getName(), e);
         }
 
         return obj;
@@ -93,6 +100,7 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
         return obj;
     }
 
+    @Override
     public T Build() throws BuilderException {
         T obj = Construct();
         obj = Name(obj);
@@ -101,8 +109,39 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
         return obj;
     }
     
-    public PropertyNamer getPropertyNamer() {
-        return this.propertyNamer;
+//    @Override
+//    public PropertyNamer getPropertyNamer() {
+//        return this.propertyNamer;
+//    }
+    
+    @Override
+    public ObjectBuilder<T> With(Function<T,T> func) {
+        super.With(func);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ObjectBuilder<T> Do(Function2<TFunc, T> func, TFunc arg) {
+        super.Do(func, arg);
+        return this;
+    }
+
+    @Override
+    public ObjectBuilder<T> And(Function<T, T> func) {
+        super.And(func);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ObjectBuilder<T> And(Function2<TFunc, T> func, TFunc arg) {
+        super.And(func, arg);
+        return this;
+    }
+
+    @Override
+    public <TFunc> ObjectBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list) {
+        super.DoForEach(func, list);
+        return this;
     }
     
     
