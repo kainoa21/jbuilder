@@ -5,39 +5,34 @@
 package com.merovingian.jbuilder;
 
 import com.google.common.base.Function;
-import com.merovingian.jbuilder.declarations.Declaration;
 import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.generators.RandomGenerator;
-import java.util.Collection;
 import java.util.List;
 
 /**
  *
  * @author jasonr
  */
-public interface ListBuilder<T> extends ListOperable<T>, Buildable<List<T>> {
+public interface ListBuilder<T> extends RangeBuilder<T> {
     
-    ListBuilder<T> All();
-    ObjectBuilder<T> getObjectBuilder();
-    int getCapacity();
-    RandomGenerator getRandomGenerator();
+    // Add a convenience method to clearly indicate that the following actions should apply to all items in this list
+    public ListBuilder<T> All();
     
-    Collection<Declaration<T>> getDeclarations();
-    Declaration<T> addDeclaration(Declaration<T> declaration);
+    // Allow public access to the Object Builder so it is easy to share
+    public ObjectBuilder<T> getObjectBuilder();
     
-    @Override
+    // Simple getter for the size of the list to be built
+    public int size();
+    
+    // From Range Builder - Override return type to match
     public ListBuilder<T> With(Function<T, T> func);
-
-    @Override
     public <TFunc> ListBuilder<T> Do(Function2<TFunc, T> func, TFunc arg);
-    
-    @Override
     public ListBuilder<T> And(Function<T, T> func);
-    
-    @Override
     public <TFunc> ListBuilder<T> And(Function2<TFunc, T> func, TFunc arg);
-    
-    @Override
     public <TFunc> ListBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list);
+ 
+    
+    // From Buildable - override return type to match
+    public ListBuilder<T> WithConstructorArgs(Object[] args);
+    public ListBuilder<T> WithAutoNamer(AutoNamer autoNamer);
     
 }

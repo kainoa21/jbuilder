@@ -1,25 +1,15 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.merovingian.jbuilder.implementation;
 
-import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.ListBuilder;
-import com.merovingian.jbuilder.ListOperable;
+import com.merovingian.jbuilder.NoEmptyConstructorTestClass;
 import com.merovingian.jbuilder.ObjectBuilder;
+import com.merovingian.jbuilder.RangeBuilder;
+import com.merovingian.jbuilder.SimpleTestClass;
 import com.merovingian.jbuilder.TestBase;
-import com.merovingian.jbuilder.declarations.Declaration;
-import com.merovingian.jbuilder.declarations.RangeDeclaration;
 import com.merovingian.jbuilder.exceptions.BuilderException;
-import com.merovingian.jbuilder.generators.UniqueRandomGenerator;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -31,61 +21,32 @@ public class ListBuilderImplTest extends TestBase {
     
     protected static final int INITIAL_CAPACITY = 10;
     
-    protected ListBuilder<String> stringBuilder;    
+    protected ListBuilder<String> stringBuilder;   
+    protected ListBuilder<SimpleTestClass> simpleBuilder;
+    protected ListBuilder<NoEmptyConstructorTestClass> classBuilder;   
     
     public ListBuilderImplTest() {
     }
     
-    @BeforeClass
-    public static void setUpClass() {
-    }
-    
-    @AfterClass
-    public static void tearDownClass() {
-    }
-    
     @Before
-    public void setUp() {
-        BuilderSetup.ResetToDefaults();
-        stringBuilder = new ListBuilderImpl<String>(String.class, INITIAL_CAPACITY, propNamer, reflecUtil);
-    }
-    
-    @After
-    public void tearDown() {
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        stringBuilder = new ListBuilderImpl<String>(String.class, INITIAL_CAPACITY, reflecUtil);
+        simpleBuilder = new ListBuilderImpl<SimpleTestClass>(SimpleTestClass.class, INITIAL_CAPACITY, reflecUtil);
+        classBuilder = new ListBuilderImpl<NoEmptyConstructorTestClass>(NoEmptyConstructorTestClass.class, INITIAL_CAPACITY, reflecUtil);
     }
 
     /**
      * Test of getCapacity method, of class ListBuilderImpl.
      */
     @Test
-    public void testGetCapacity() {
-        System.out.println("getCapacity");
+    public void testSize() {
+        System.out.println("size");
         ListBuilder<String> instance = stringBuilder;
         int expResult = INITIAL_CAPACITY;
-        int result = instance.getCapacity();
+        int result = instance.size();
         assertEquals(expResult, result);
-    }
-
-    /**
-     * Test of getDeclarations method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testGetDeclarations() {
-        System.out.println("getDeclarations");
-        ListBuilder<String> instance = stringBuilder;
-        
-        // Should start out as null
-        assertEquals(0, instance.getDeclarations().size());
-        
-        // Global Declarations don't go in this list
-        assertEquals(0, instance.All().getDeclarations().size());
-        
-        // now lets add one
-        Declaration<String> dec = new RangeDeclaration<String>(instance, instance.getObjectBuilder(), 0, INITIAL_CAPACITY - 1);
-        instance.addDeclaration(dec);
-        Collection expResult = Arrays.asList(dec);
-        Collection result = instance.getDeclarations();
-        assertEquals(expResult.size(), result.size());
     }
 
     /**
@@ -105,86 +66,12 @@ public class ListBuilderImplTest extends TestBase {
      */
     @Test
     public void testAll() throws BuilderException {
-        System.out.println("All");
-        List<String> result = stringBuilder
-                .All()
-                .With(setString)
-                .Build();
-        assertNotNull(result);
-        assertEquals(INITIAL_CAPACITY, result.size());
         
-        for (String s : result) {
-            assertEquals(TEST_VALUE, s);
-        }
+        System.out.println("All");
+        assertEquals(stringBuilder, stringBuilder.All());
+        
     }
 
-    /**
-     * Test of Construct method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testConstruct() throws BuilderException {
-        System.out.println("Construct");
-        ListBuilderImpl instance = null;
-        instance.Construct();
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of Name method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testName() throws BuilderException {
-        System.out.println("Name");
-        ListBuilderImpl instance = null;
-        List expResult = null;
-        List result = instance.Name(null);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of Build method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testBuild() throws BuilderException {
-        System.out.println("Build");
-        ListBuilderImpl instance = null;
-        List expResult = null;
-        List result = instance.Build();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of addDeclaration method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testAddDeclaration() {
-        System.out.println("addDeclaration");
-        ListBuilderImpl instance = null;
-        Declaration expResult = null;
-        Declaration result = instance.addDeclaration(null);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
-
-    /**
-     * Test of getRandomGenerator method, of class ListBuilderImpl.
-     */
-    @Test
-    public void testGetRandomGenerator() {
-        System.out.println("getRandomGenerator");
-        ListBuilderImpl instance = null;
-        UniqueRandomGenerator expResult = null;
-        UniqueRandomGenerator result = instance.getRandomGenerator();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
-    }
 
     /**
      * Test of TheFirst method, of class ListBuilderImpl.
@@ -192,13 +79,75 @@ public class ListBuilderImplTest extends TestBase {
     @Test
     public void testTheFirst() {
         System.out.println("TheFirst");
+        int amount = INITIAL_CAPACITY / 2;
+        
+        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        assertNotNull(theFirst);
+        assertEquals(0,theFirst.getStart());
+        assertEquals(amount-1,theFirst.getEnd());
+        assertEquals(amount, theFirst.getNumberOfAffectedItems());
+        
+    }
+    
+    /**
+     * Test of TheFirst method, of class ListBuilderImpl.
+     */
+    @Test
+    public void testTheFirstWholeList() {
+        System.out.println("TheFirst");
+        int amount = INITIAL_CAPACITY;
+        
+        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        assertNotNull(theFirst);
+        assertEquals(0,theFirst.getStart());
+        assertEquals(amount-1,theFirst.getEnd());
+        assertEquals(amount, theFirst.getNumberOfAffectedItems());
+        
+    }
+    
+    /**
+     * Test of TheFirst method, of class ListBuilderImpl.
+     */
+    @Test
+    public void testTheFirstAfterAll() {
+        System.out.println("TheFirstAfterAll");
+        int amount = INITIAL_CAPACITY / 2;
+        
+        RangeBuilder<String> theFirst = stringBuilder
+                .All()
+                .With(setString)
+                .TheFirst(amount);
+        assertNotNull(theFirst);
+        assertEquals(0,theFirst.getStart());
+        assertEquals(amount-1,theFirst.getEnd());
+        assertEquals(amount, theFirst.getNumberOfAffectedItems());
+        
+    }
+    
+    /**
+     * Test of TheFirst method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheFirstTooSmall() {
+        System.out.println("TheFirstTooSmall");
         int amount = 0;
-        ListBuilderImpl instance = null;
-        ListOperable expResult = null;
-        ListOperable result = instance.TheFirst(amount);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        fail("Should have thrown an exception");
+        
+    }
+    
+    /**
+     * Test of TheFirst method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheFirstTooBig() {
+        System.out.println("TheFirstTooBig");
+        int amount = INITIAL_CAPACITY + 1;
+        
+        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        fail("Should have thrown an exception");
+        
     }
 
     /**
@@ -207,13 +156,39 @@ public class ListBuilderImplTest extends TestBase {
     @Test
     public void testTheLast() {
         System.out.println("TheLast");
+        int amount = INITIAL_CAPACITY / 2;
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        assertNotNull(range);
+        assertEquals(INITIAL_CAPACITY - amount,range.getStart());
+        assertEquals(INITIAL_CAPACITY - 1,range.getEnd());
+        assertEquals(amount, range.getNumberOfAffectedItems());
+    }
+    
+    /**
+     * Test of TheLast method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheLastTooSmall() {
+        System.out.println("TheLastTooSmall");
         int amount = 0;
-        ListBuilderImpl instance = null;
-        ListOperable expResult = null;
-        ListOperable result = instance.TheLast(amount);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        fail("Should have thrown an exception");
+        
+    }
+    
+    /**
+     * Test of TheLast method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheLastTooBig() {
+        System.out.println("TheLastTooBig");
+        int amount = INITIAL_CAPACITY + 1;
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        fail("Should have thrown an exception");
+        
     }
 
     /**
@@ -222,14 +197,63 @@ public class ListBuilderImplTest extends TestBase {
     @Test
     public void testSection() {
         System.out.println("Section");
+        int start = (INITIAL_CAPACITY / 2) - 3;
+        int end = (INITIAL_CAPACITY / 2) + 2;
+        
+        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        assertNotNull(range);
+        assertEquals(start,range.getStart());
+        assertEquals(end,range.getEnd());
+        assertEquals(end - start + 1, range.getNumberOfAffectedItems());
+    }
+    
+    @Test
+    public void testSectionStartEnd0() {
+        System.out.println("SectionStartEnd0");
         int start = 0;
         int end = 0;
-        ListBuilderImpl instance = null;
-        ListOperable expResult = null;
-        ListOperable result = instance.Section(start, end);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        assertNotNull(range);
+        assertEquals(start,range.getStart());
+        assertEquals(end,range.getEnd());
+        assertEquals(end - start + 1, range.getNumberOfAffectedItems());
+    }
+    
+    /**
+     * Test of Section method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSectionTooSmall() {
+        System.out.println("SectionTooSmall");
+        int start = -1;
+        int end = (INITIAL_CAPACITY / 2) + 2;
+        
+        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        fail("Should have thrown an exception");
+    }
+    
+    /**
+     * Test of Section method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSectionTooBig() {
+        System.out.println("SectionTooBig");
+        int start = (INITIAL_CAPACITY / 2) - 3;
+        int end = INITIAL_CAPACITY + 1;
+        
+        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        fail("Should have thrown an exception");
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testSectionStartAfterEnd() {
+        System.out.println("SectionStartAfterEnd");
+        int start = (INITIAL_CAPACITY / 2) + 1;
+        int end = (INITIAL_CAPACITY / 2) - 1;
+        
+        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        fail("Should have thrown an exception");
     }
 
     /**
@@ -238,13 +262,49 @@ public class ListBuilderImplTest extends TestBase {
     @Test
     public void testTheNext() {
         System.out.println("TheNext");
-        int amount = 0;
-        ListBuilderImpl instance = null;
-        ListOperable expResult = null;
-        ListOperable result = instance.TheNext(amount);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        int first = (INITIAL_CAPACITY / 2);
+        int next = 3;
+        
+        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        assertNotNull(range);
+        assertEquals(first,range.getStart());
+        assertEquals(first + next - 1,range.getEnd());
+        assertEquals(next, range.getNumberOfAffectedItems());
+    }
+    
+    /**
+     * Test of TheNext method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheNextTooBig() {
+        System.out.println("TheNextTooBig");
+        int first = (INITIAL_CAPACITY / 2);
+        int next = first + 1;
+        
+        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        fail("Should have thrown an exception");
+    }
+    
+    /**
+     * Test of TheNext method, of class ListBuilderImpl.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testTheNextNoMore() {
+        System.out.println("TheNextNoMore");
+        int first = INITIAL_CAPACITY ;
+        int next = 1;
+        
+        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        fail("Should have thrown an exception");
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testTheNextFirst() {
+        System.out.println("TheNext");
+        int next = 1;
+        
+        RangeBuilder<String> range = stringBuilder.TheNext(next);
+        fail("Should have thrown an exception");
     }
 
     /**
@@ -253,12 +313,178 @@ public class ListBuilderImplTest extends TestBase {
     @Test
     public void testThePrevious() {
         System.out.println("ThePrevious");
-        int amount = 0;
-        ListBuilderImpl instance = null;
-        ListOperable expResult = null;
-        ListOperable result = instance.ThePrevious(amount);
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        int amount = (INITIAL_CAPACITY / 2);
+        int prev = 3;
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        assertNotNull(range);
+        assertEquals(INITIAL_CAPACITY - amount - prev,range.getStart());
+        assertEquals(INITIAL_CAPACITY - amount - 1,range.getEnd());
+        assertEquals(prev, range.getNumberOfAffectedItems());
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testThePreviousTooBig() {
+        System.out.println("ThePreviousTooBig");
+        int amount = (INITIAL_CAPACITY / 2);
+        int prev = amount + 1;
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        fail("Should have thrown an exception");
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testThePreviousTooSmall() {
+        System.out.println("ThePreviousTooSmall");
+        int amount = (INITIAL_CAPACITY / 2);
+        int prev = 0;
+        
+        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        fail("Should have thrown an exception");
+    }
+    
+    @Test(expected = NullPointerException.class)
+    public void testThePreviousFirst() {
+        System.out.println("ThePreviousFirst");
+        int amount = (INITIAL_CAPACITY / 2);
+        int prev = 3;
+        
+        RangeBuilder<String> range = stringBuilder.ThePrevious(prev);
+        fail("Should have thrown an exception");
+    }
+    
+    /**
+     * Test of Build method, of class ListBuilderImpl.
+     */
+    @Test
+    public void testBuild() throws BuilderException {
+        System.out.println("Build");
+        
+        List<String> result = stringBuilder.Build();
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        
+        for (String s : result) {
+            assertEquals("", s);
+        }
+        
+    }
+    
+    @Test
+    public void testBuildWithArgs() throws BuilderException {
+        System.out.println("BuildWithArgs");
+        
+        String[] args = new String[]{TEST_VALUE};
+        List<String> result = stringBuilder
+                .WithConstructorArgs(args)
+                .Build();
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        
+        for (String s : result) {
+            assertEquals(TEST_VALUE, s);
+        }
+        
+    }
+    
+    @Test
+    public void testBuildWithAutoName() throws BuilderException {
+        System.out.println("BuildWithAutoName");
+        
+        String[] args = new String[]{TEST_VALUE};
+        List<SimpleTestClass> result = simpleBuilder
+                .WithAutoNamer(autoNamer)
+                .Build();
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        
+        for (SimpleTestClass s : result) {
+            assertEquals(TEST_VALUE, s.myTestField);
+        }
+        
+    }
+    
+    @Test
+    public void testBuildWithAll() throws BuilderException {
+        System.out.println("BuildWithAll");
+        
+        List<String> result = stringBuilder
+                .All()
+                .Build();
+        
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        for (String s : result) {
+            assertEquals("", s);
+        }
+        
+
+        result = stringBuilder
+                .All()
+                .With(setString)
+                .Build();
+        assertEquals(INITIAL_CAPACITY, result.size());
+        for (String s : result) {
+            assertEquals(TEST_VALUE, s);
+        }
+        
+    }
+    
+    @Test
+    public void testBuildWithRange() throws BuilderException {
+        System.out.println("BuildWithRange");
+        
+        int amount = INITIAL_CAPACITY / 2;
+        
+        String[] args = new String[]{TEST_VALUE};
+        List<SimpleTestClass> result = simpleBuilder
+                .TheFirst(amount)
+                    .WithAutoNamer(autoNamer)
+                .Build();
+        
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        
+        for (int i=0; i < amount; i++) {
+            assertEquals(TEST_VALUE, result.get(i).myTestField);
+        }
+        
+        for (int i=amount+1; i < INITIAL_CAPACITY; i++) {
+            assertEquals("original", result.get(i).myTestField);
+        }
+        
+    }
+    
+    @Test
+    public void testBuildWithAllPlusRange() throws BuilderException {
+        System.out.println("BuildWithAllPlusRange");
+        
+        int start = INITIAL_CAPACITY / 2 - 1;
+        int end = INITIAL_CAPACITY / 2 + 1;
+        
+        String otherString = "OtherString";
+        
+        List<String> result = stringBuilder
+                .All()
+                    .With(setString)
+                .Section(start, end)
+                    .Do(setString2, otherString)
+                .Build();
+        
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+        
+        for (int i=0; i < start; i++) {
+            assertEquals(TEST_VALUE, result.get(i));
+        }
+        
+        for (int i=start+1; i <= end; i++) {
+            assertEquals(otherString, result.get(i));
+        }
+        
+        for (int i=end+1; i < INITIAL_CAPACITY; i++) {
+            assertEquals(TEST_VALUE, result.get(i));
+        }
+        
     }
 }

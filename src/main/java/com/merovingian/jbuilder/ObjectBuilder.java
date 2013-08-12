@@ -6,7 +6,6 @@ package com.merovingian.jbuilder;
 
 import com.google.common.base.Function;
 import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
 import java.util.List;
 
 /**
@@ -15,18 +14,15 @@ import java.util.List;
  */
 public interface ObjectBuilder<T> extends Operable<T>, Buildable<T> {
     
-    ObjectBuilder<T> WithConstructorArgs(Object[] args);
+    // From Buildable
+    @Override
+    public ObjectBuilder<T> WithConstructorArgs(Object[] args);
     
-    ObjectBuilder<T> WithPropertyNamer(PropertyNamer propertyNamer);
+    @Override
+    public ObjectBuilder<T> WithAutoNamer(AutoNamer propertyNamer);
     
-//    PropertyNamer getPropertyNamer();
     
-//    public T CallFunctions(T obj);
-//    
-//    public T Name(T obj) throws BuilderException;
-//    
-//    public T Construct() throws BuilderException;
-    
+    //From Operable    
     @Override
     public ObjectBuilder<T> With(Function<T, T> func);
 
@@ -41,4 +37,5 @@ public interface ObjectBuilder<T> extends Operable<T>, Buildable<T> {
     
     @Override
     public <TFunc> ObjectBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list);
+    
 }

@@ -4,39 +4,28 @@
  */
 package com.merovingian.jbuilder.implementation;
 
-import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.ListBuilder;
 import com.merovingian.jbuilder.ObjectBuilder;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
+import com.merovingian.jbuilder.AutoNamer;
+import com.merovingian.jbuilder.TestBase;
 import com.merovingian.jbuilder.propertynaming.SequentialPropertyNamer;
 import com.merovingian.jbuilder.util.ReflectionUtilImpl;
-import static junit.framework.Assert.assertEquals;
-import junit.framework.TestCase;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author jasonr
  */
-public class BuilderImplTest extends TestCase {
+public class BuilderImplTest extends TestBase {
     
-    public BuilderImplTest(String testName) {
-        super(testName);
-    }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp(); 
-        BuilderSetup.ResetToDefaults();
-    }
-    
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
+    public BuilderImplTest() {
     }
 
     /**
      * Test of CreateNew method, of class BuilderImpl.
      */
+    @Test
     public void testCreateNew() {
         System.out.println("CreateNew");
         BuilderImpl instance = new BuilderImpl<String>(String.class);
@@ -46,21 +35,23 @@ public class BuilderImplTest extends TestCase {
     /**
      * Test of CreateListOfSize method, of class BuilderImpl.
      */
+    @Test
     public void testCreateListOfSize_int() {
         System.out.println("CreateListOfSize");
         int size = 10;
         ListBuilder result = new BuilderImpl<String>(String.class).CreateListOfSize(size);
-        assertEquals(size, result.getCapacity());
+        assertEquals(size, result.size());
     }
 
     /**
      * Test of CreateListOfSize method, of class BuilderImpl.
      */
+    @Test
     public void testCreateListOfSize_int_PropertyNamer() {
         System.out.println("CreateListOfSize");
         int size = 10;
-        PropertyNamer propertyNamer = new SequentialPropertyNamer(new ReflectionUtilImpl());
+        AutoNamer propertyNamer = new SequentialPropertyNamer(new ReflectionUtilImpl());
         ListBuilder result = new BuilderImpl<String>(String.class).CreateListOfSize(size, propertyNamer);
-        assertEquals(size, result.getCapacity());
+        assertEquals(size, result.size());
     }
 }

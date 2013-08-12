@@ -23,4 +23,5 @@ public interface Operable<T> {
     <TFunc> Operable<T> And(Function2<TFunc, T> func, TFunc arg);
     
     <TFunc> Operable<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list);
+    
 }

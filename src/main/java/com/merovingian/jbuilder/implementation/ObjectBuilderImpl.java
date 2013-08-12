@@ -11,18 +11,18 @@ import com.merovingian.jbuilder.exceptions.BuilderException;
 import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.exceptions.TypeCreationException;
 import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
+import com.merovingian.jbuilder.AutoNamer;
 import java.util.List;
 
 /**
  *
  * @author jasonr
  */
-public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectBuilder<T> {
+public class ObjectBuilderImpl<T> extends BaseOperable<T> implements ObjectBuilder<T> {
 
     private final Class<T> type;
     private final ReflectionUtil reflectionUtil;
-    private PropertyNamer propertyNamer;
+    private AutoNamer autoNamer;
     private Object[] constructorArgs;
 
     public ObjectBuilderImpl(Class<T> c, ReflectionUtil reflectionUtil) {
@@ -42,8 +42,8 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
     }
 
     @Override
-    public ObjectBuilder<T> WithPropertyNamer(PropertyNamer thePropertyNamer) {
-        this.propertyNamer = thePropertyNamer;
+    public ObjectBuilder<T> WithAutoNamer(AutoNamer autoNamer) {
+        this.autoNamer = autoNamer;
         return this;
     }
 
@@ -88,11 +88,11 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
     }
 
     public T Name(T obj) throws BuilderException {
-        if (!BuilderSetup.AutoNameProperties) {
+        if (!BuilderSetup.AutoNameProperties || autoNamer == null) {
             return obj;
         }
         try {
-            propertyNamer.setValuesOf(obj);
+            autoNamer.setValuesOf(obj);
         } catch (Exception e) {
             throw new BuilderException("Error while trying to autoname properties.", e);
         }
@@ -108,11 +108,7 @@ public class ObjectBuilderImpl<T> extends AbstractOperable<T> implements ObjectB
 
         return obj;
     }
-    
-//    @Override
-//    public PropertyNamer getPropertyNamer() {
-//        return this.propertyNamer;
-//    }
+   
     
     @Override
     public ObjectBuilder<T> With(Function<T,T> func) {

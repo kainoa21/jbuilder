@@ -14,4 +14,8 @@ public interface Buildable<T> {
     
     T Build() throws BuilderException;
     
+    public Buildable<T> WithConstructorArgs(Object[] args);
+    
+    public Buildable<T> WithAutoNamer(AutoNamer autoNamer);
+    
 }

@@ -4,8 +4,6 @@
  */
 package com.merovingian.jbuilder;
 
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
-
 
 /**
  *
@@ -17,6 +15,6 @@ public interface Builder<T> {
     
     public ListBuilder<T> CreateListOfSize(int size);
     
-    public ListBuilder<T> CreateListOfSize(int size, PropertyNamer propertyNamer);
+    public ListBuilder<T> CreateListOfSize(int size, AutoNamer propertyNamer);
  
 }

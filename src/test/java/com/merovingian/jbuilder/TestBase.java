@@ -7,7 +7,6 @@ package com.merovingian.jbuilder;
 import com.google.common.base.Function;
 import com.merovingian.jbuilder.exceptions.TypeCreationException;
 import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
 import com.merovingian.jbuilder.util.ReflectionUtil;
 import com.merovingian.jbuilder.util.ReflectionUtilImpl;
 import java.lang.reflect.Field;
@@ -29,7 +28,7 @@ public abstract class TestBase {
     
     protected static final ReflectionUtil reflecUtil = new ReflectionUtilImpl();
     
-    protected static final PropertyNamer propNamer = new PropertyNamer() {
+    protected static final AutoNamer autoNamer = new AutoNamer() {
         @Override
         public <T> void setValuesOf(T obj) throws InvocationTargetException, IllegalAccessException, TypeCreationException {
             try {

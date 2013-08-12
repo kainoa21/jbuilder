@@ -8,7 +8,6 @@ import com.google.common.base.Function;
 import com.merovingian.jbuilder.persistance.PersistenceService;
 import com.merovingian.jbuilder.util.ReflectionUtilImpl;
 import com.merovingian.jbuilder.persistance.PersistenceServiceImpl;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
 import com.merovingian.jbuilder.propertynaming.SequentialPropertyNamer;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
@@ -24,8 +23,8 @@ public final class BuilderSetup {
 
     private static PersistenceService persistenceService;
     public static boolean AutoNameProperties;
-    private static Map<Class<?>, PropertyNamer> propertyNamers;
-    private static PropertyNamer defaultPropertyNamer;
+    private static Map<Class<?>, AutoNamer> propertyNamers;
+    private static AutoNamer defaultPropertyNamer;
     private static List<Member> disabledAutoNameProperties;
     public static boolean HasDisabledAutoNameProperties;
 
@@ -37,12 +36,12 @@ public final class BuilderSetup {
         SetDefaultPropertyNamer(new SequentialPropertyNamer(new ReflectionUtilImpl()));
         persistenceService = new PersistenceServiceImpl();
         AutoNameProperties = true;
-        propertyNamers = new HashMap<Class<?>, PropertyNamer>();
+        propertyNamers = new HashMap<Class<?>, AutoNamer>();
         HasDisabledAutoNameProperties = false;
         disabledAutoNameProperties = new ArrayList<Member>();
     }
 
-    public static void SetDefaultPropertyNamer(PropertyNamer propertyNamer) {
+    public static void SetDefaultPropertyNamer(AutoNamer propertyNamer) {
         defaultPropertyNamer = propertyNamer;
     }
 
@@ -62,11 +61,11 @@ public final class BuilderSetup {
         persistenceService.SetPersistenceUpdateMethod(c, saveMethod);
     }
 
-    public static void SetPropertyNamerFor(Class<?> c, PropertyNamer propertyNamer) {
+    public static void SetPropertyNamerFor(Class<?> c, AutoNamer propertyNamer) {
         propertyNamers.put(c, propertyNamer);
     }
 
-    public static PropertyNamer GetPropertyNamerFor(Class<?> c) {
+    public static AutoNamer GetPropertyNamerFor(Class<?> c) {
         if (!propertyNamers.containsKey(c)) {
             return defaultPropertyNamer;
         }
@@ -88,21 +87,5 @@ public final class BuilderSetup {
 
         return false;
     }
-//        private static <TModel, T> Member GetProperty(Expression<Func<TModel, T>> expression)
-//        {
-//            MemberExpression memberExpression = GetMemberExpression(expression);
-//
-//            return memberExpression.Member;
-//        }
-//
-//        private static <TModel, T> MemberExpression GetMemberExpression(Expression<Func<TModel, T>> expression)
-//        {
-//            MemberExpression memberExpression = null;
-//            if (expression.Body.NodeType == ExpressionType.MemberAccess)
-//            {
-//                memberExpression = expression.Body as MemberExpression;
-//            }
-//
-//            return memberExpression;
-//        }
+    
 }

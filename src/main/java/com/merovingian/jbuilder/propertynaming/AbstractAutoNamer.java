@@ -4,6 +4,7 @@
  */
 package com.merovingian.jbuilder.propertynaming;
 
+import com.merovingian.jbuilder.AutoNamer;
 import com.merovingian.jbuilder.util.ReflectionUtil;
 import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.exceptions.TypeCreationException;
@@ -19,17 +20,17 @@ import java.util.UUID;
  *
  * @author jasonr
  */
-public abstract class AbstractPropertyNamer implements PropertyNamer {
+public abstract class AbstractAutoNamer implements AutoNamer {
 
     protected final ReflectionUtil ReflectionUtil;
 
     //protected const BindingFlags FLAGS = (BindingFlags.Public | BindingFlags.Instance);
-    protected AbstractPropertyNamer(ReflectionUtil reflectionUtil) {
+    protected AbstractAutoNamer(ReflectionUtil reflectionUtil) {
         this.ReflectionUtil = reflectionUtil;
     }
-
+    
     @Override
-    public abstract <T> void setValuesOfAllIn(List<T> objects)  throws InvocationTargetException, IllegalAccessException, TypeCreationException;
+    public abstract <T> void setValuesOfAllIn(List<T> obj) throws InvocationTargetException, IllegalAccessException, TypeCreationException;
 
     @Override
     public <T> void setValuesOf(T obj) throws InvocationTargetException, IllegalAccessException, TypeCreationException {

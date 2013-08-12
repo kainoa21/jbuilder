@@ -6,23 +6,16 @@ package com.merovingian.jbuilder.implementation;
 
 import com.google.common.base.Function;
 import com.merovingian.jbuilder.util.DistinctAffectedItemCalculator;
-import com.merovingian.jbuilder.declarations.Declaration;
+import com.merovingian.jbuilder.RangeBuilder;
 import com.google.common.base.Preconditions;
 import com.merovingian.jbuilder.ObjectBuilder;
 import com.merovingian.jbuilder.ListBuilder;
 import com.merovingian.jbuilder.util.ReflectionUtil;
 import com.merovingian.jbuilder.exceptions.BuilderException;
-import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.ListOperable;
-import com.merovingian.jbuilder.declarations.DeclarationComparer;
-import com.merovingian.jbuilder.declarations.GlobalDeclaration;
-import com.merovingian.jbuilder.declarations.RangeDeclaration;
 import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.generators.UniqueRandomGenerator;
-import com.merovingian.jbuilder.generators.UniqueRandomGeneratorImpl;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
+import com.merovingian.jbuilder.AutoNamer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -30,219 +23,166 @@ import java.util.PriorityQueue;
  *
  * @author jasonr
  */
-public class ListBuilderImpl<T> extends AbstractOperable<T> implements ListBuilder<T> {
+public class ListBuilderImpl<T> implements ListBuilder<T> {
 
-    private final Class<T> type;
     private final int size;
-    private final PropertyNamer propertyNamer;
-    private final ReflectionUtil reflectionUtil;
-    private final PriorityQueue<Declaration<T>> declarations;
+    private final PriorityQueue<RangeBuilder<T>> rangeBuilders;
     private final ObjectBuilder<T> objectBuilder;
-    private GlobalDeclaration<T> globalDeclaration;
-    private RangeDeclaration<T> lastDeclaration;
-    private UniqueRandomGenerator scopeUniqueRandomGenerator;
+    
+    private RangeBuilder<T> lastRangeBuilder;
+    private RangeBuilder<T> globalRangeBuilder;
+    
+    // Constructors
+    
+    public ListBuilderImpl(Class<T> c, int size, ReflectionUtil reflectionUtil) {
+        this(new ObjectBuilderImpl<T>(c, reflectionUtil), size);
+    }
 
-    public ListBuilderImpl(Class<T> c, int size, PropertyNamer propertyNamer, ReflectionUtil reflectionUtil) {
-        this.type = c;
+    public ListBuilderImpl(Class<T> c, int size, ReflectionUtil reflectionUtil, AutoNamer autoNamer) {
+        this(c, size, reflectionUtil);
+        globalRangeBuilder.WithAutoNamer(autoNamer);
+    }
+    
+    public ListBuilderImpl(ObjectBuilder<T> objBuilder, int size) {
         this.size = size;
-        this.propertyNamer = propertyNamer;
-        this.reflectionUtil = reflectionUtil;
-
-        declarations = new PriorityQueue<Declaration<T>>(1, new DeclarationComparer());
-
-        scopeUniqueRandomGenerator = new UniqueRandomGeneratorImpl();
-        
-        objectBuilder = new ObjectBuilderImpl<T>(c, reflectionUtil).WithPropertyNamer(propertyNamer);
+       
+        rangeBuilders = new PriorityQueue<RangeBuilder<T>>(1, new RangeComparer());
+        objectBuilder = objBuilder;
+        globalRangeBuilder = new BaseRangeBuilder<T>(this);
        
     }
+    
+    // ListBuilder Implementation
 
     @Override
-    public int getCapacity() {
-        return size;
+    public ListBuilder<T> All() {
+        return this;
     }
-
-    @Override
-    public Collection<Declaration<T>> getDeclarations() {
-        return declarations;
-    }
-
+    
     @Override
     public ObjectBuilder<T> getObjectBuilder() {
         return objectBuilder;
     }
-
+    
     @Override
-    public ListBuilder<T> All() {
-        this.globalDeclaration = new GlobalDeclaration<T>(this, getObjectBuilder());
-        return this;
+    public int size() {
+        return this.size;
     }
 
-    public void Construct() throws BuilderException {
-        
-        if (getDistinctAffectedItemCount() < getCapacity()
-                && globalDeclaration == null
-                && reflectionUtil.RequiresConstructorArgs(type)) {
-            throw new BuilderException("The type requires constructor args but they have not be supplied for all the elements of the list");
-        }
-
-        // Add a global declaration to construct default items for this list for any ranges which have not been explicitly declared
-        if (getDistinctAffectedItemCount() < getCapacity() && globalDeclaration == null) {
-            this.globalDeclaration = new GlobalDeclaration<T>(this, getObjectBuilder());
-        }
-        
-    }
-
-    public List<T> Name(List<T> list) throws BuilderException {
-
-        if (!BuilderSetup.AutoNameProperties) {
-            return list;
-        }
-
-        try {
-            propertyNamer.setValuesOfAllIn(list);
-        } catch (Exception e) {
-            throw new BuilderException("Error while trying to autoname properties.", e);
-        }
-        
-        return list;
-    }
-
+    // Buildable List<T>
     @Override
     public List<T> Build() throws BuilderException {
  
-        List<T> list = new ArrayList<T>(getCapacity());
-
-        Construct();
+        List<T> list = new ArrayList<T>(this.size);
+        
+        // Use our global builder to get a list of all potential items
+        // We will use this list to grab any items that are otherwise unspecified
+        List<T> globalList = this.BuildRange();
 
         int index = 0;
-        Declaration d = declarations.poll();
+        RangeBuilder d = rangeBuilders.poll();
         while (d != null) {
-            if (index < d.getStart()) {
-                // then use the global declaration to contruct until we get to the next declaration
-                list.addAll(this.globalDeclaration.Build(d.getStart() - index));
-            }
+         
+            // Fill in from the global list
+            list.addAll(globalList.subList(index, d.getStart()));
 
-            list.addAll(d.Build());
+            // Add from the range builder
+            list.addAll(d.BuildRange());
             index = d.getEnd() + 1;
+            
+            d = rangeBuilders.poll();
         }
 
-        if (index < getCapacity()) {
-            // then use the global declaration to contruct until we get to the next declaration
-            list.addAll(this.globalDeclaration.Build(getCapacity() - index));
-        }
+        // Fill in the end from the global list
+        list.addAll(globalList.subList(index, this.size));
 
         return list;
     }
-
+    
+    
+    // Range Builder implementation
     @Override
-    public Declaration<T> addDeclaration(Declaration<T> declaration) {
-        
-        Preconditions.checkArgument(declaration.getStart() >= 0, "A declaration was added which had a start index less than or equal to zero: %s", declaration.getStart());
-        Preconditions.checkArgument(declaration.getEnd() < this.getCapacity(), "A declaration was added which had an end index greater than or equal to the capacity of the list being generated: %s", declaration.getEnd());
-        
-        this.declarations.add(declaration);    
-        
-        if (declaration instanceof RangeDeclaration) {
-            this.lastDeclaration = (RangeDeclaration<T>)declaration;
-        }
-        
-        return declaration;
+    public int getNumberOfAffectedItems() {
+        return this.size - this.getDistinctAffectedItemCount();
     }
 
     @Override
-    public UniqueRandomGenerator getRandomGenerator() {
-        return scopeUniqueRandomGenerator;
+    public int getStart() {
+        return 0;
     }
 
-    private int getDistinctAffectedItemCount() {
-        
-        DistinctAffectedItemCalculator distinctAffectedItemCalculator = new DistinctAffectedItemCalculator(getCapacity());
-
-        for (Declaration d : getDeclarations()) {
-            distinctAffectedItemCalculator.AddRange(d.getStart(), d.getEnd(), d.getNumberOfAffectedItems());
-        }
-
-        return distinctAffectedItemCalculator.GetTotal();
+    @Override
+    public int getEnd() {
+        return this.size - 1;
     }
     
-    /**
-     * Declarations Section
-     */
-    
     @Override
-    public ListOperable<T> TheFirst(int amount) {
+    public List<T> BuildRange() throws BuilderException {
+        return this.globalRangeBuilder.BuildRange();
+    }
+    
+    // ListOperable<T>
+    @Override
+    public RangeBuilder<T> TheFirst(int amount) {
         Preconditions.checkArgument(amount > 0, "TheFirst amount must be 1 or greater: %s", amount);
-        Preconditions.checkArgument(amount < getCapacity(), "TheFirst amount must be less than the size of the list that is being generated %s", amount);
+        Preconditions.checkArgument(amount <= size, "TheFirst amount must be less than the size of the list that is being generated %s", amount);
 
-        Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), 0, amount - 1);
-        this.addDeclaration(declaration);
+        RangeBuilder declaration = new BaseRangeBuilder<T>(this, this.getObjectBuilder(), 0, amount - 1);
+        this.addRangeBuilder(declaration);
         return declaration;
     }
 
     @Override
-    public ListOperable<T> TheLast(int amount) {
+    public RangeBuilder<T> TheLast(int amount) {
 
         Preconditions.checkArgument(amount > 0, "TheLast amount must be 1 or greater: %s", amount);
-        Preconditions.checkArgument(amount < getCapacity(), "TheLast amount must be less than the size of the list that is being generated %s", amount);
+        Preconditions.checkArgument(amount <= size, "TheLast amount must be less than the size of the list that is being generated %s", amount);
 
 
-        int start = getCapacity() - amount;
-        Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, getCapacity() - 1);
-        this.addDeclaration(declaration);
+        int start = size - amount;
+        RangeBuilder declaration = new BaseRangeBuilder<T>(this, this.getObjectBuilder(), start, this.getEnd());
+        this.addRangeBuilder(declaration);
         return declaration;
     }
-
-//    public ListOperable<T> Random(int amount) {
-//        return Random(amount, 0, getCapacity());
-//    }
-//
-//    public ListOperable<T> Random(int amount, int start, int end) {
-//
-//        Preconditions.checkArgument(amount > 0, "Random amount must be 1 or greater: %s", amount);
-//        Preconditions.checkArgument(amount < getCapacity(), "Random amount must be less than the size of the list that is being generated %s", amount);
-//
-//        Declaration declaration = new RandomDeclaration(this, this.getObjectBuilder(), getRandomGenerator(), amount, start, end);
-//        return this;
-//    }
  
     @Override
-    public ListOperable<T> Section(int start, int end) {
+    public RangeBuilder<T> Section(int start, int end) {
 
         Preconditions.checkArgument(start >= 0, "Section - start must be 0 or greater: %s", start);
-        Preconditions.checkArgument(start < getCapacity(), "Section - start must be less than the size of the list that is being generated: %s", start);
-        Preconditions.checkArgument(end >= 1, "Section - end must be 1 or greater: %s", start);
-        Preconditions.checkArgument(end < getCapacity(), "Section - end must be less than the size of the list that is being generated: %s", start);
+        Preconditions.checkArgument(start < size, "Section - start must be less than the size of the list that is being generated: %s", start);
+        Preconditions.checkArgument(end >= 0, "Section - end must be 0 or greater: %s", start);
+        Preconditions.checkArgument(end < size, "Section - end must be less than the size of the list that is being generated: %s", start);
         Preconditions.checkArgument(start <= end, "Section - end must be greater than start.");
 
-        Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
-        this.addDeclaration(declaration);
+        RangeBuilder declaration = new BaseRangeBuilder<T>(this, this.getObjectBuilder(), start, end);
+        this.addRangeBuilder(declaration);
         return declaration;
     }
     
     @Override
-    public ListOperable<T> TheNext(int amount) {
+    public RangeBuilder<T> TheNext(int amount) {
         Preconditions.checkArgument(amount > 0, "TheNext must be 1 or greater: %s", amount);
 
-        RangeDeclaration<T> rangeDeclaration = this.lastDeclaration;
+        RangeBuilder<T> rangeDeclaration = this.lastRangeBuilder;
 
         Preconditions.checkNotNull(rangeDeclaration, "Before using TheNext you must have just used a RangeDeclaration - i.e. (TheFirst or Section)");
         
         int start = rangeDeclaration.getEnd() + 1;
         int end = start + amount - 1;
         
-        Preconditions.checkArgument(end < getCapacity(), "TheNext amount must be less than the remaining capacity of the list being generated: %s", amount);
+        Preconditions.checkArgument(end < size, "TheNext amount must be less than the remaining capacity of the list being generated: %s", amount);
 
-        Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
-        this.addDeclaration(declaration);
+        RangeBuilder declaration = new BaseRangeBuilder<T>(this, this.getObjectBuilder(), start, end);
+        this.addRangeBuilder(declaration);
 
         return declaration;
     }
     
     @Override
-    public ListOperable<T> ThePrevious(int amount) {
+    public RangeBuilder<T> ThePrevious(int amount) {
         Preconditions.checkArgument(amount > 0, "ThePrevious must be 1 or greater: %s", amount);
 
-        RangeDeclaration<T> rangeDeclaration = this.lastDeclaration;
+        RangeBuilder<T> rangeDeclaration = this.lastRangeBuilder;
 
         Preconditions.checkNotNull(rangeDeclaration, "Before using ThePrevious you must have just used a RangeDeclaration - i.e. (TheLast or Section)");
         
@@ -251,39 +191,78 @@ public class ListBuilderImpl<T> extends AbstractOperable<T> implements ListBuild
         
         Preconditions.checkArgument(end >= 0, "ThePrevious amount must be less than the remaining capacity of the list being generated: %s", amount);
 
-        Declaration declaration = new RangeDeclaration<T>(this, this.getObjectBuilder(), start, end);
-        this.addDeclaration(declaration);
+        RangeBuilder declaration = new BaseRangeBuilder<T>(this, this.getObjectBuilder(), start, end);
+        this.addRangeBuilder(declaration);
 
         return declaration;
     }
 
+   
+    // Operable<List<T>>
     @Override
     public ListBuilder<T> With(Function<T, T> func) {
-        this.getObjectBuilder().With(func);
+        this.globalRangeBuilder.With(func);
         return this;
     }
 
     @Override
     public <TFunc> ListBuilder<T> Do(Function2<TFunc, T> func, TFunc arg) {
-        this.getObjectBuilder().Do(func, arg);
+        this.globalRangeBuilder.Do(func, arg);
         return this;
     }
 
     @Override
     public ListBuilder<T> And(Function<T, T> func) {
-        this.getObjectBuilder().And(func);
+        this.globalRangeBuilder.And(func);
         return this;
     }
 
     @Override
     public <TFunc> ListBuilder<T> And(Function2<TFunc, T> func, TFunc arg) {
-        this.getObjectBuilder().And(func, arg);
+        this.globalRangeBuilder.And(func, arg);
         return this;
     }
 
     @Override
     public <TFunc> ListBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list) {
-        this.getObjectBuilder().DoForEach(func, list);
+        this.globalRangeBuilder.DoForEach(func, list);
         return this;
     }
+
+    // Buildable<T>
+    @Override
+    public ListBuilder<T> WithConstructorArgs(Object[] args) {
+        this.getObjectBuilder().WithConstructorArgs(args);
+        return this;
+    }
+
+    @Override
+    public ListBuilder<T> WithAutoNamer(AutoNamer autoNamer) {
+        this.globalRangeBuilder.WithAutoNamer(autoNamer);
+        return this;
+    }
+
+    // Helper methods
+    protected RangeBuilder<T> addRangeBuilder(RangeBuilder<T> rangeBuilder) {
+
+        Preconditions.checkArgument(rangeBuilder.getStart() >= 0, "A range was added which had a start index less than or equal to zero: %s", rangeBuilder.getStart());
+        Preconditions.checkArgument(rangeBuilder.getEnd() < this.size(), "A range was added which had an end index greater than or equal to the capacity of the list being generated: %s", rangeBuilder.getEnd());
+
+        this.rangeBuilders.add(rangeBuilder);
+        this.lastRangeBuilder = rangeBuilder;
+
+        return rangeBuilder;
+    }
+
+    protected int getDistinctAffectedItemCount() {
+
+        DistinctAffectedItemCalculator distinctAffectedItemCalculator = new DistinctAffectedItemCalculator(this.size);
+
+        for (RangeBuilder d : this.rangeBuilders) {
+            distinctAffectedItemCalculator.AddRange(d.getStart(), d.getEnd(), d.getNumberOfAffectedItems());
+        }
+
+        return distinctAffectedItemCalculator.GetTotal();
+    }
+
 }

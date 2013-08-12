@@ -6,7 +6,7 @@ package com.merovingian.jbuilder.propertynaming;
 
 import com.merovingian.jbuilder.util.ReflectionUtil;
 import com.merovingian.jbuilder.exceptions.TypeCreationException;
-import static com.merovingian.jbuilder.propertynaming.AbstractPropertyNamer.GetEnumValues;
+import static com.merovingian.jbuilder.propertynaming.AbstractAutoNamer.GetEnumValues;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.nio.ByteBuffer;
@@ -19,7 +19,7 @@ import java.util.UUID;
  *
  * @author jasonr
  */
-public class SequentialPropertyNamer extends AbstractPropertyNamer {
+public class SequentialPropertyNamer extends AbstractAutoNamer {
     
     private int _sequenceNumber;
     

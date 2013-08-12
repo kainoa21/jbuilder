@@ -11,7 +11,7 @@ import com.merovingian.jbuilder.Builder;
 import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.ListBuilder;
 import com.merovingian.jbuilder.ObjectBuilder;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
+import com.merovingian.jbuilder.AutoNamer;
 
 /**
  *
@@ -25,20 +25,23 @@ public class BuilderImpl<T> implements Builder<T> {
         type = c;
     }
     
+    @Override
     public ObjectBuilder<T> CreateNew() {
         ReflectionUtil reflectionUtil = new ReflectionUtilImpl();
-        PropertyNamer propertyNamer = BuilderSetup.GetPropertyNamerFor(type);
-        return new ObjectBuilderImpl<T>(type, reflectionUtil).WithPropertyNamer(propertyNamer);
+        AutoNamer propertyNamer = BuilderSetup.GetPropertyNamerFor(type);
+        return new ObjectBuilderImpl<T>(type, reflectionUtil).WithAutoNamer(propertyNamer);
     }
 
+    @Override
     public ListBuilder<T> CreateListOfSize(int size) {
         Preconditions.checkArgument(size > 0, "Size of list must be 1 or greater: %s", size);
-        PropertyNamer propertyNamer = BuilderSetup.GetPropertyNamerFor(type);
+        AutoNamer propertyNamer = BuilderSetup.GetPropertyNamerFor(type);
         return CreateListOfSize(size, propertyNamer);
     }
 
-    public ListBuilder<T> CreateListOfSize(int size, PropertyNamer propertyNamer) {
-        return new ListBuilderImpl<T>(type, size, propertyNamer, new ReflectionUtilImpl());
+    @Override
+    public ListBuilder<T> CreateListOfSize(int size, AutoNamer propertyNamer) {
+        return new ListBuilderImpl<T>(type, size, new ReflectionUtilImpl(), propertyNamer);
     }
     
 }

@@ -4,24 +4,13 @@
  */
 package com.merovingian.jbuilder.implementation;
 
-import com.google.common.base.Function;
 import com.merovingian.jbuilder.BuilderSetup;
 import com.merovingian.jbuilder.NoEmptyConstructorTestClass;
 import com.merovingian.jbuilder.ObjectBuilder;
-import com.merovingian.jbuilder.Operable;
 import com.merovingian.jbuilder.SimpleTestClass;
 import com.merovingian.jbuilder.TestBase;
 import com.merovingian.jbuilder.exceptions.BuilderException;
-import com.merovingian.jbuilder.exceptions.TypeCreationException;
-import com.merovingian.jbuilder.functions.Function2;
-import com.merovingian.jbuilder.propertynaming.PropertyNamer;
-import com.merovingian.jbuilder.util.ReflectionUtilImpl;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.util.AbstractCollection;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -80,14 +69,14 @@ public class ObjectBuilderImplTest  extends TestBase {
     }
 
     /**
-     * Test of WithPropertyNamer method, of class ObjectBuilderImpl.
+     * Test of WithAutoNamer method, of class ObjectBuilderImpl.
      */
     @Test
     public void testWithPropertyNamer() throws BuilderException {
         System.out.println("WithPropertyNamer");
         BuilderSetup.AutoNameProperties = true;
         
-        SimpleTestClass instance = simpleBuilder.WithPropertyNamer(propNamer).Build();
+        SimpleTestClass instance = simpleBuilder.WithAutoNamer(autoNamer).Build();
         
         assertNotNull(instance);
         assertEquals(TEST_VALUE, instance.myTestField);
@@ -183,7 +172,7 @@ public class ObjectBuilderImplTest  extends TestBase {
 //        
 //        // With AutoNameProperties = false
 //        BuilderSetup.AutoNameProperties = false;
-//        instance = simpleBuilder.WithPropertyNamer(propNamer).Name(instance);
+//        instance = simpleBuilder.WithAutoNamer(autoNamer).Name(instance);
 //        assertNotNull(instance);
 //        assertEquals("original", instance.myTestField);
 //        
@@ -212,7 +201,7 @@ public class ObjectBuilderImplTest  extends TestBase {
         String[] args = new String[]{TEST_VALUE};
         NoEmptyConstructorTestClass instance = constructBuilder
                 .WithConstructorArgs(args)
-                .WithPropertyNamer(propNamer)
+                .WithAutoNamer(autoNamer)
                 .Do(setProperty, TEST_VALUE)
                 .Build();
         assertNotNull(instance);
