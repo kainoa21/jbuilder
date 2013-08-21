@@ -18,15 +18,12 @@ import java.util.List;
  *
  * @author jasonr
  */
-public class ObjectBuilderImpl<T> extends BaseOperable<T> implements ObjectBuilder<T> {
+public class ObjectBuilderImpl<T> extends AbstractObjectBuilder<T> {
 
-    private final Class<T> type;
     private final ReflectionUtil reflectionUtil;
-    private AutoNamer autoNamer;
-    private Object[] constructorArgs;
 
     public ObjectBuilderImpl(Class<T> c, ReflectionUtil reflectionUtil) {
-        this.type = c;
+        super(c);
         this.reflectionUtil = reflectionUtil;
     }
 

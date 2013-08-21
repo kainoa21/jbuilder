@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author jasonr
  */
-public interface ListBuilder<T> extends RangeBuilder<T> {
+public interface ListBuilder<T> extends ListOperable<T>, Buildable<List<T>> {
     
     // Add a convenience method to clearly indicate that the following actions should apply to all items in this list
     public ListBuilder<T> All();
@@ -23,13 +23,19 @@ public interface ListBuilder<T> extends RangeBuilder<T> {
     // Simple getter for the size of the list to be built
     public int size();
     
-    // From Range Builder - Override return type to match
+    // From Operable - Override return type to match
     public ListBuilder<T> With(Function<T, T> func);
     public <TFunc> ListBuilder<T> Do(Function2<TFunc, T> func, TFunc arg);
     public ListBuilder<T> And(Function<T, T> func);
     public <TFunc> ListBuilder<T> And(Function2<TFunc, T> func, TFunc arg);
     public <TFunc> ListBuilder<T> DoForEach(Function2<TFunc, T> func, List<TFunc> list);
- 
+    
+    // From ListOperable - override return type to match
+    Declaration<T> TheFirst(int amount);
+    Declaration<T> TheNext(int amount);
+    Declaration<T> TheLast(int amount);
+    Declaration<T> ThePrevious(int amount);
+    Declaration<T> Section(int start, int end);
     
     // From Buildable - override return type to match
     public ListBuilder<T> WithConstructorArgs(Object[] args);

@@ -4,7 +4,7 @@ package com.merovingian.jbuilder.implementation;
 import com.merovingian.jbuilder.ListBuilder;
 import com.merovingian.jbuilder.NoEmptyConstructorTestClass;
 import com.merovingian.jbuilder.ObjectBuilder;
-import com.merovingian.jbuilder.RangeBuilder;
+import com.merovingian.jbuilder.Declaration;
 import com.merovingian.jbuilder.SimpleTestClass;
 import com.merovingian.jbuilder.TestBase;
 import com.merovingian.jbuilder.exceptions.BuilderException;
@@ -81,7 +81,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheFirst");
         int amount = INITIAL_CAPACITY / 2;
         
-        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        RangeDeclaration<String> theFirst = (RangeDeclaration)stringBuilder.TheFirst(amount);
         assertNotNull(theFirst);
         assertEquals(0,theFirst.getStart());
         assertEquals(amount-1,theFirst.getEnd());
@@ -97,7 +97,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheFirst");
         int amount = INITIAL_CAPACITY;
         
-        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        RangeDeclaration<String> theFirst = (RangeDeclaration)stringBuilder.TheFirst(amount);
         assertNotNull(theFirst);
         assertEquals(0,theFirst.getStart());
         assertEquals(amount-1,theFirst.getEnd());
@@ -113,7 +113,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheFirstAfterAll");
         int amount = INITIAL_CAPACITY / 2;
         
-        RangeBuilder<String> theFirst = stringBuilder
+        RangeDeclaration<String> theFirst = (RangeDeclaration)stringBuilder
                 .All()
                 .With(setString)
                 .TheFirst(amount);
@@ -132,7 +132,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheFirstTooSmall");
         int amount = 0;
         
-        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        Declaration<String> theFirst = stringBuilder.TheFirst(amount);
         fail("Should have thrown an exception");
         
     }
@@ -145,7 +145,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheFirstTooBig");
         int amount = INITIAL_CAPACITY + 1;
         
-        RangeBuilder<String> theFirst = stringBuilder.TheFirst(amount);
+        Declaration<String> theFirst = stringBuilder.TheFirst(amount);
         fail("Should have thrown an exception");
         
     }
@@ -158,7 +158,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheLast");
         int amount = INITIAL_CAPACITY / 2;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        RangeDeclaration<String> range = (RangeDeclaration)stringBuilder.TheLast(amount);
         assertNotNull(range);
         assertEquals(INITIAL_CAPACITY - amount,range.getStart());
         assertEquals(INITIAL_CAPACITY - 1,range.getEnd());
@@ -173,7 +173,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheLastTooSmall");
         int amount = 0;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        Declaration<String> range = stringBuilder.TheLast(amount);
         fail("Should have thrown an exception");
         
     }
@@ -186,7 +186,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheLastTooBig");
         int amount = INITIAL_CAPACITY + 1;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount);
+        Declaration<String> range = stringBuilder.TheLast(amount);
         fail("Should have thrown an exception");
         
     }
@@ -200,7 +200,7 @@ public class ListBuilderImplTest extends TestBase {
         int start = (INITIAL_CAPACITY / 2) - 3;
         int end = (INITIAL_CAPACITY / 2) + 2;
         
-        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        RangeDeclaration<String> range = (RangeDeclaration)stringBuilder.Section(start, end);
         assertNotNull(range);
         assertEquals(start,range.getStart());
         assertEquals(end,range.getEnd());
@@ -213,7 +213,7 @@ public class ListBuilderImplTest extends TestBase {
         int start = 0;
         int end = 0;
         
-        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        RangeDeclaration<String> range = (RangeDeclaration)stringBuilder.Section(start, end);
         assertNotNull(range);
         assertEquals(start,range.getStart());
         assertEquals(end,range.getEnd());
@@ -229,7 +229,7 @@ public class ListBuilderImplTest extends TestBase {
         int start = -1;
         int end = (INITIAL_CAPACITY / 2) + 2;
         
-        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        Declaration<String> range = stringBuilder.Section(start, end);
         fail("Should have thrown an exception");
     }
     
@@ -242,7 +242,7 @@ public class ListBuilderImplTest extends TestBase {
         int start = (INITIAL_CAPACITY / 2) - 3;
         int end = INITIAL_CAPACITY + 1;
         
-        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        Declaration<String> range = stringBuilder.Section(start, end);
         fail("Should have thrown an exception");
     }
     
@@ -252,7 +252,7 @@ public class ListBuilderImplTest extends TestBase {
         int start = (INITIAL_CAPACITY / 2) + 1;
         int end = (INITIAL_CAPACITY / 2) - 1;
         
-        RangeBuilder<String> range = stringBuilder.Section(start, end);
+        Declaration<String> range = stringBuilder.Section(start, end);
         fail("Should have thrown an exception");
     }
 
@@ -265,7 +265,7 @@ public class ListBuilderImplTest extends TestBase {
         int first = (INITIAL_CAPACITY / 2);
         int next = 3;
         
-        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        RangeDeclaration<String> range = (RangeDeclaration)stringBuilder.TheFirst(first).TheNext(next);
         assertNotNull(range);
         assertEquals(first,range.getStart());
         assertEquals(first + next - 1,range.getEnd());
@@ -281,7 +281,7 @@ public class ListBuilderImplTest extends TestBase {
         int first = (INITIAL_CAPACITY / 2);
         int next = first + 1;
         
-        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        Declaration<String> range = stringBuilder.TheFirst(first).TheNext(next);
         fail("Should have thrown an exception");
     }
     
@@ -294,7 +294,7 @@ public class ListBuilderImplTest extends TestBase {
         int first = INITIAL_CAPACITY ;
         int next = 1;
         
-        RangeBuilder<String> range = stringBuilder.TheFirst(first).TheNext(next);
+        Declaration<String> range = stringBuilder.TheFirst(first).TheNext(next);
         fail("Should have thrown an exception");
     }
     
@@ -303,7 +303,7 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("TheNext");
         int next = 1;
         
-        RangeBuilder<String> range = stringBuilder.TheNext(next);
+        Declaration<String> range = stringBuilder.TheNext(next);
         fail("Should have thrown an exception");
     }
 
@@ -316,7 +316,7 @@ public class ListBuilderImplTest extends TestBase {
         int amount = (INITIAL_CAPACITY / 2);
         int prev = 3;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        RangeDeclaration<String> range = (RangeDeclaration)stringBuilder.TheLast(amount).ThePrevious(prev);
         assertNotNull(range);
         assertEquals(INITIAL_CAPACITY - amount - prev,range.getStart());
         assertEquals(INITIAL_CAPACITY - amount - 1,range.getEnd());
@@ -329,7 +329,7 @@ public class ListBuilderImplTest extends TestBase {
         int amount = (INITIAL_CAPACITY / 2);
         int prev = amount + 1;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        Declaration<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
         fail("Should have thrown an exception");
     }
     
@@ -339,7 +339,7 @@ public class ListBuilderImplTest extends TestBase {
         int amount = (INITIAL_CAPACITY / 2);
         int prev = 0;
         
-        RangeBuilder<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
+        Declaration<String> range = stringBuilder.TheLast(amount).ThePrevious(prev);
         fail("Should have thrown an exception");
     }
     
@@ -349,7 +349,7 @@ public class ListBuilderImplTest extends TestBase {
         int amount = (INITIAL_CAPACITY / 2);
         int prev = 3;
         
-        RangeBuilder<String> range = stringBuilder.ThePrevious(prev);
+        Declaration<String> range = stringBuilder.ThePrevious(prev);
         fail("Should have thrown an exception");
     }
     
@@ -435,22 +435,21 @@ public class ListBuilderImplTest extends TestBase {
         System.out.println("BuildWithRange");
         
         int amount = INITIAL_CAPACITY / 2;
-        
-        String[] args = new String[]{TEST_VALUE};
-        List<SimpleTestClass> result = simpleBuilder
+ 
+        List<String> result = stringBuilder
                 .TheFirst(amount)
-                    .WithAutoNamer(autoNamer)
+                    .With(setString)
                 .Build();
         
         assertNotNull(result);
         assertEquals(INITIAL_CAPACITY, result.size());
         
         for (int i=0; i < amount; i++) {
-            assertEquals(TEST_VALUE, result.get(i).myTestField);
+            assertEquals(TEST_VALUE, result.get(i));
         }
         
         for (int i=amount+1; i < INITIAL_CAPACITY; i++) {
-            assertEquals("original", result.get(i).myTestField);
+            assertEquals("", result.get(i));
         }
         
     }
@@ -485,6 +484,37 @@ public class ListBuilderImplTest extends TestBase {
         for (int i=end+1; i < INITIAL_CAPACITY; i++) {
             assertEquals(TEST_VALUE, result.get(i));
         }
+        
+    }
+    
+    @Test
+    public void testBuildWithAllPlusFirstAndNext() throws BuilderException {
+        System.out.println("BuildWithAllPlusFirstAndNext");
+        
+        int amount = INITIAL_CAPACITY - 2;
+        
+        String otherString = "OtherString";
+        String yas = "yetAnotherString";
+        
+        ListBuilder<String> sb = new ListBuilderImpl<String>(String.class, 3, reflecUtil);
+        
+        List<String> result = stringBuilder
+                .All()
+                    .Do(setString2, TEST_VALUE)
+                .TheFirst(1)
+                    .Do(setString2, otherString)
+                    .And(setString2, otherString)
+                .TheNext(1)
+                    .Do(setString2, yas)
+                    .And(setString2, yas)
+                .TheNext(1)
+                    .Do(setString2, yas)
+                    .And(setString2, yas)
+                .Build();
+        
+        assertNotNull(result);
+        assertEquals(INITIAL_CAPACITY, result.size());
+       
         
     }
 }
